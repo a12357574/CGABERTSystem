@@ -2,8 +2,7 @@ import streamlit as st
 import pandas as pd
 import json
 import os
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
+from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 import io
@@ -14,22 +13,18 @@ import matplotlib.pyplot as plt
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Authenticate with Google Drive
+# Authenticate with Google Drive using service account
 def authenticate_drive():
-    SCOPES = ['https://www.googleapis.com/auth/drive']
-    creds = None
-    token_file = 'token.json'
-    if os.path.exists(token_file):
-        try:
-            creds = Credentials.from_authorized_user_file(token_file, SCOPES)
-            logger.info("Loaded existing credentials from token.json")
-        except ValueError as e:
-            logger.error(f"Invalid token.json: {e}")
-            creds = None
-    if not creds or not creds.valid:
-        st.error("Authentication required. Please run 'python authenticate.py' to generate token.json.")
+    try:
+        creds = service_account.Credentials.from_service_account_info(
+            st.secrets["gcp_service_account"],
+            scopes=['https://www.googleapis.com/auth/drive']
+        )
+        logger.info("Loaded service account credentials")
+        return build('drive', 'v3', credentials=creds)
+    except Exception as e:
+        st.error(f"Failed to authenticate with Google Drive: {e}")
         st.stop()
-    return build('drive', 'v3', credentials=creds)
 
 # Global initialization
 drive_service = authenticate_drive()
