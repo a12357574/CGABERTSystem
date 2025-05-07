@@ -29,7 +29,7 @@ def authenticate_drive():
 # Global initialization
 drive_service = authenticate_drive()
 
-st.title("CGABERT Model Comparison with Google Colab")
+st.title("Improved Model Comparison with Google Colab")
 
 # File upload
 uploaded_file = st.file_uploader("Upload a CSV dataset for comparison", type=["csv"])
